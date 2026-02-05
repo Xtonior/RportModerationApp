@@ -1,0 +1,26 @@
+services:
+  kafka:
+    image: apache/kafka:latest
+    container_name: kafka-container
+    ports:
+      - "9092:9092" # втунтренний доступ из других контейнеров
+      - "9094:9094" # внешнний доступ для Spring
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-container:9092,EXTERNAL://localhost:9094
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      CLUSTER_ID: "F848EeDS84f8KL1Oa2ZQ3c"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  init-topics:
+    image: apache/kafka:latest
+    depends_on:
+      - kafka
+    command: >
+      /bin/sh -c "
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-container:9092 --create --if-not-exists --topic topic-1 --partitions 2 --replication-factor 1;
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-container:9092 --create --if-not-exists --topic topic-2 --partitions 2 --replication-factor 1;"

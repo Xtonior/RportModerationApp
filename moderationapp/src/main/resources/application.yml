@@ -1,0 +1,15 @@
+server:
+  port: 8082
+
+kafka:
+  topics:
+    topic-1: topic-1
+    topic-2: topic-2
+  bootstrap-server: "localhost:9094"
+
+redisapp:
+  url: "http://localhost:8081"
+  endpoint: "/info/{clientId}"
+  timeout: 5
+  retries: 3
+  retryDelay: 2
