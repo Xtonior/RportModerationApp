@@ -1,4 +1,4 @@
-package kz.lab.redisapp.config;
+package kz.lab.moderationapp.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,19 +9,18 @@ import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import kz.lab.redisapp.model.ClientData;
+import kz.lab.moderationapp.model.ReportEvent;
 
 @Configuration
-public class ClientDataConfiguration {
+public class ReportEventConfiguration {
     @Bean
-    ReactiveRedisOperations<String, ClientData> redisOperations(ReactiveRedisConnectionFactory factory) {
-        JacksonJsonRedisSerializer<ClientData> serializer = new JacksonJsonRedisSerializer<>(
-                ClientData.class);
+    ReactiveRedisOperations<String, ReportEvent> redisOperations(ReactiveRedisConnectionFactory factory) {
+        JacksonJsonRedisSerializer<ReportEvent> serializer = new JacksonJsonRedisSerializer<>(ReportEvent.class);
 
-        RedisSerializationContext.RedisSerializationContextBuilder<String, ClientData> builder = RedisSerializationContext
+        RedisSerializationContext.RedisSerializationContextBuilder<String, ReportEvent> builder = RedisSerializationContext
                 .newSerializationContext(new StringRedisSerializer());
 
-        RedisSerializationContext<String, ClientData> context = builder.value(serializer).build();
+        RedisSerializationContext<String, ReportEvent> context = builder.value(serializer).build();
 
         return new ReactiveRedisTemplate<>(factory, context);
     }
