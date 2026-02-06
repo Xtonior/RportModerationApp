@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import kz.lab.moderationapp.model.ClientData;
+import kz.lab.moderationapp.model.ClientDataDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -36,7 +36,7 @@ public class UserDataFetcherService {
     @Autowired
     WebClient webClient;
 
-    public Mono<ClientData> fetchData(UUID clientId) {
+    public Mono<ClientDataDto> fetchData(UUID clientId) {
         return webClient.get()
                 .uri(builder -> builder
                     .path(endpoint)
@@ -44,7 +44,7 @@ public class UserDataFetcherService {
                 )
                 .retrieve()
                 .onStatus(HttpStatusCode::is5xxServerError, res -> Mono.error(new RuntimeException("Server Error")))
-                .bodyToMono(ClientData.class)
+                .bodyToMono(ClientDataDto.class)
                 .timeout(Duration.ofSeconds(timeout))
                 .retryWhen(Retry.backoff(retries, Duration.ofSeconds(retryDelay))
                         .jitter(0.75)

@@ -14,8 +14,9 @@ services:
     image: redis:7.2-alpine
     container_name: redis-filler
     volumes:
-      - ./gen_data.sh:/gen_data.sh
+      - ./users.csv:/data/users.csv
+      - ./load.sh:/load.sh
     depends_on:
       redis:
         condition: service_healthy
-    entrypoint: ["sh", "/gen_data.sh"]
+    entrypoint: ["sh", "/load.sh"]

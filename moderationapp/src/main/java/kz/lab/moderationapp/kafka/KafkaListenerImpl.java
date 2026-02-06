@@ -2,60 +2,47 @@ package kz.lab.moderationapp.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import kz.lab.moderationapp.controller.ModerationController;
 import kz.lab.moderationapp.exception.KafkaException;
 import kz.lab.moderationapp.model.ReportEvent;
-import kz.lab.moderationapp.service.ModerationService;
-import kz.lab.moderationapp.service.RedisService;
-import kz.lab.moderationapp.service.UserDataFetcherService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Mono;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class KafkaListenerImpl {
     @Autowired
-    UserDataFetcherService userDataFetcherService;
-
-    @Autowired
-    ModerationService moderationService;
-
-    @Autowired
-    RedisService redisService;
-
-    @Value("${spring.data.redis.eventStorageTtl}")
-    long eventTtl;
+    ModerationController moderationController;
 
     @KafkaListener(topics = "${kafka.topics.topic-1}", containerFactory = "kafkaListenerContainerFactory", groupId = "topic-1-listener")
     public void ListenTopic1(ConsumerRecord<String, ReportEvent> record) throws KafkaException {
-        log.info("got a message");
+        log.info("topic-1 got a message");
         ReportEvent event = record.value();
 
         if (event.getEventId() == null || event.getClientId() == null) {
             throw new KafkaException("Failed to parse kafka message");
         }
 
-        String eventId = event.getEventId().toString();
+        moderationController.process(event);
+    }
 
-        redisService.isAlreadyProcessed(eventId)
-                .flatMap(alreadyProcessed -> {
-                    log.info("Event {} already processed, skipping", eventId);
-                    return Mono.empty();
-                })
-                .switchIfEmpty(
-                        userDataFetcherService.fetchData(event.getClientId())
-                                .flatMap(cl -> moderationService.HandleReport(event, cl))
-                                .flatMap(result ->
-                                redisService.saveEvent(eventId, event, eventTtl)
-                                        .thenReturn(result)
-                                ))
-                .doOnSuccess(x -> log.info("Processing finished for event: {}", eventId))
-                .doOnError(e -> log.error("Error in pipeline for event: {}", eventId, e))
-                .subscribe();
+    @KafkaListener(topics = "${kafka.topics.topic-2}", containerFactory = "kafkaListenerContainerFactory", groupId = "topic-2-listener")
+    public void ListenTopic2(ConsumerRecord<String, ReportEvent> record) throws KafkaException {
+        log.info("topic-2 got a message");
+        ReportEvent event = record.value();
+
+        if (event.getEventId() == null || event.getClientId() == null) {
+            throw new KafkaException("Failed to parse kafka message");
+        }
+
+        log.info("Topic 2: \n");
+        log.info("Event ID: {}\n", event.getEventId());
+        log.info("Event client: {}\n", event.getClientId());
+        log.info("Event category: {}\n", event.getCategory());
+        log.info("Event text: {}\n", event.getText());
     }
 }

@@ -23,3 +23,8 @@ spring:
       connect-timeout: 2s
       client-type: lettuce
       eventStorageTtl: 60
+
+moderation:
+  workday:
+    start: "09:00"
+    end: "18:00"

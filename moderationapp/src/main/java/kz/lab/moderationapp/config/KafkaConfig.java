@@ -50,7 +50,7 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.setCommonErrorHandler(new DefaultErrorHandler((record, exception) -> {
-            System.err.println("Kafka-S3 error");
+            System.err.println("Kafka error");
             System.err.println("Data: " + record.value());
             System.err.println("Reason: " + exception.getMessage());
             exception.printStackTrace();
