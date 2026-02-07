@@ -1,22 +1,43 @@
 import uuid
-import csv
 import json
 import random
+import redis
+import csv
 
-def generate_test_data(count=100):
-    categories = ["VIP", "REGULAR", "GUEST", "ADMIN"]
-    filename = 'users.csv'
-    
-    with open(filename, mode='w', newline='') as file:
+def generate_and_sync():
+    try:
+        r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+        r.ping()
+    except:
+        print("Ошибка подключения к Redis!")
+        return
+
+    all_categories = ["BILLING", "TECH_SUPPORT", "ACCOUNT_ISSUE", "DELIVERY"]
+    filename_csv = 'data.csv'
+    count = 50
+
+    with open(filename_csv, mode='w', newline='') as file:
         writer = csv.writer(file)
-        for _ in range(count):
+        writer.writerow(['CLIENT_ID', 'CATEGORY', 'EXPECTED_RESULT'])
+
+        for i in range(count):
             client_id = str(uuid.uuid4())
-            category = random.choice(categories)
-            has_active_requests = "true" if random.random() < 0.2 else "false"
             
-            writer.writerow([client_id, category, has_active_requests])
-    
-    print(f"Файл {filename} создан. Сгенерировано {count} пользователей.")
+            active_cat = random.choice(all_categories)
+            
+            client_data = {
+                "clientId": client_id,
+                "activeCategories": [active_cat]
+            }
+            r.set(f"client:{client_id}", json.dumps(client_data))
+
+            if i % 2 == 0:
+                writer.writerow([client_id, active_cat, 'SHOULD_BE_BLOCKED'])
+            else:
+                other_cats = [c for c in all_categories if c != active_cat]
+                writer.writerow([client_id, random.choice(other_cats), 'SHOULD_PASS'])
+
+    print(f"Данные созданы и загружены")
 
 if __name__ == "__main__":
-    generate_test_data(50)
+    generate_and_sync()

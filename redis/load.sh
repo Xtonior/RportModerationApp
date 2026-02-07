@@ -1,7 +1,7 @@
 #!/bin/sh
 sleep 2
 
-FILE="/data/users.csv"
+FILE="/data/users_redis_data.csv"
 
 if [ -f "$FILE" ]; then
   while IFS=, read -r client_id category has_active

@@ -1,5 +1,7 @@
 package kz.lab.moderationapp.model;
 
-public record ClientDataDto(String clientId, String category, boolean hasActiveRequests) {
-    
+import java.util.List;
+
+public record ClientDataDto(String clientId, List<String> activeCategories) {
+
 }

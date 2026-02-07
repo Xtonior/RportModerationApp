@@ -23,25 +23,20 @@ public class ModerationService {
     public Mono<ReportEvent> handleReport(ReportEvent event, ClientDataDto clientDataDto) {
         log.info("Moderating event clientId: {}", event.getClientId());
 
-        if (!StringUtils.hasText(clientDataDto.category())) {
-            log.error("Empty client category!");
-            return Mono.empty();
-        }
-
         if (!StringUtils.hasText(event.getCategory())) {
             log.error("Empty event client category!");
             return Mono.empty();
         }
 
-        if (clientDataDto.hasActiveRequests()) {
-            if (clientDataDto.category().equals(event.getCategory())) {
-                log.info("Skipping report, client already has active request in the category");
-                return Mono.empty();
-            }
+        if (clientDataDto.activeCategories() != null &&
+                clientDataDto.activeCategories().contains(event.getCategory())) {
+            log.info("Skipping event {}: client {} already has an active request in category {}",
+                    event.getEventId(), event.getClientId(), event.getCategory());
+            return Mono.empty();
         }
 
         if (!isWorkTime()) {
-            log.info("Skipping report due to wotktime");
+            log.info("Skipping event {} due to wotktime", event.getEventId());
             return Mono.empty();
         }
 

@@ -1,5 +1,6 @@
 package kz.lab.redisapp.model;
 
-public record ClientData(String clientId, String category, boolean hasActiveRequests) {
-    
+import java.util.List;
+
+public record ClientData(String clientId, List<String> activeCategories ) {
 }
