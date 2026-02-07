@@ -47,3 +47,5 @@ jmeter/Test Plan.jmx
 ```
 
 в Jmeter указать путь до jmeter/data.csv
+
+![arch.png](https://github.com/Xtonior/RportModerationApp/blob/main/img/arch.png?raw=true)
